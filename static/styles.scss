@@ -1,3 +1,69 @@
 body {
     background-color: gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+
+// Main container for the create, remove, and start quiz sections
+// INDEX.page
+.maincontainer {
+    background-color: yellow;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    min-width: 400px;
+    max-width: 80%;
+    min-height: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    border-radius: 8px;
+}
+
+.content-create {
+    background-color: red;
+    flex: 1;
+    margin-right: 20px;
+}
+
+.start-container {
+    background-color: blue;
+    flex: 1;
+    margin-left: 20px;
+}
+
+.remove-container {
+    background-color: green;
+    flex: 1;
+    margin-left: 20px;
+}
+.create-question-container {
+    background-color: yellow;
+    display: block;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-width: 400px;
+    max-width: 80%;
+    min-height: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+    border-radius: 8px;
+    
+    .create-container {
+        flex: 1;
+        background-color: red;
+        padding: 10px;
+        border-radius: 5px;
+
+    }
+    .question-container {
+        flex: 1;
+        background-color: lightcoral;
+        padding: 8px;
+        margin: 5px 0;
+        border-radius: 4px;
+
+    }
 }

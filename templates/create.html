@@ -1,1 +1,23 @@
 {% extends "base.html" %}
+
+{% block body%}
+<div class="create-question-container">
+    <div class="create-container">
+        <form action="/create" method="POST">
+            <input type="text" name="question" id="question"  placeholder="Enter your question" required>
+            <input type="text" name="answer" id="answer" placeholder="Enter the answer" required>
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
+            <button type="submit">Create</button>
+        </form>
+    </div>
+    {% for question in questions %}
+        <div class="question-container">
+            <p>Question ID: {{ question.id }}</p>
+            <p>Q: {{ question.question }}</p>
+            <p>A: {{ question.anwser }}</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
