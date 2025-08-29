@@ -6,6 +6,9 @@
 
 {% block body %}
     <div class="maincontainer">
+        <h1>Welcome {{name}}</h1>
+        <form action="/logout" method="POST">
+            <button type="submit" name="action" value="logout">Logout</button>
         <div class="content-create">
             <form action="/create" method="post">
             <h1>If you wish to create content, press the button below!</h1>
