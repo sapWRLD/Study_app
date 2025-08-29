@@ -1,12 +1,14 @@
 from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
-import random
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///questions.db"
 
 db = SQLAlchemy(app)
+#TODO: implement user authentication
+
+#TODO: create user model
 
 class Questions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +17,8 @@ class Questions(db.Model):
     
     def __repr__(self):
         return f"<Question {self.id}>"
+
+#TODO: make a login system
 
 @app.route("/", methods=['GET', 'POST'])
 def home():
