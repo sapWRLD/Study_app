@@ -1,5 +1,7 @@
 from flask import Flask, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
+import random
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///questions.db"
@@ -28,7 +30,17 @@ def home():
 
 @app.route("/quiz", methods=['GET', 'POST'])
 def quiz():
-    return render_template("quizpage.html")
+    if request.method == 'POST':
+        anwser = request.form.get('answer')
+        if anwser:
+            questions = Questions.query.all()
+            if anwser == Questions.anwser:
+                message = "Correct!"
+            else:
+                message = "Incorrect!"
+        else:
+            message = "Please provide an answer."
+    return render_template("quizpage.html", message=message, question=Questions.query.order_by(func.random()).first())
 
 @app.route("/create", methods=['GET', 'POST'])
 def create():
