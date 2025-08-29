@@ -35,7 +35,7 @@ def login():
     if request.method == 'POST':   
         user = User.query.filter_by(username=request.form["name"]).first()
         if user and check_password_hash(user.password_hash, request.form["password"]):
-            login_user(user, remember=False)
+            login_user(user, remember=True)
             return redirect(url_for("home"))
 
     return render_template("login.html") 
@@ -103,7 +103,7 @@ def quiz():
             else:
                 message = "Question not found."
         else:
-            message = "No active question. Please try again."
+            message = "No active question. Please create some."
 
         # Pick a new random question for next round
         question = Questions.query.order_by(func.random()).first()
