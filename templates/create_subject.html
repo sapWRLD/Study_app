@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="maincontainer">
+    <h1>Create a New Subject</h1>
+    <form method="POST" action="{{ url_for('create') }}">
+      <input type="text" name="subjectname" placeholder="Subject Name" required>
+      <button type="submit">Create Subject</button>
+    </form>
+  </div>
+{% endblock%}

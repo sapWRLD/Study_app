@@ -13,19 +13,24 @@ db = SQLAlchemy(app)
 
 login_manager = LoginManager(app) 
 class User(db.Model, UserMixin): 
-    id = db.Column(db.Integer, primary_key=True) 
-    username = db.Column(db.String(100), nullable=False, unique=True) 
-    password_hash = db.Column(db.String(200), nullable=False) 
-    questions = db.relationship('Questions', backref='owner', lazy=True)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), nullable=False, unique=True)
+    password_hash = db.Column(db.String(200), nullable=False)
+    subjects = db.relationship('Subject', backref='owner', lazy=True)
+ 
+class Subject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(40), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    questions = db.relationship('Questions', backref='subject', lazy=True)
 
 class Questions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(200), nullable=False)
-    anwser = db.Column(db.String(100), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    answer = db.Column(db.String(100), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
     def __repr__(self):
         return f"<Question {self.id}>"
-
 
 @login_manager.user_loader 
 def load_user(user_id): return User.query.get(int(user_id)) 
@@ -85,66 +90,147 @@ def home():
 @login_required
 def quiz():
     message = None
-    question = None
 
     if request.method == 'POST':
-        # Retrieve the stored question ID from session
-        question_id = session.get('current_question_id')
-        if question_id:
-            question = Questions.query.get(question_id)
+        subject_id = request.form.get('subject_id')
+        if subject_id:
+            # Store selected subject in session
+            session['quiz_subject_id'] = int(subject_id)
+            # Pick first random question from this subject
+            question = Questions.query.filter_by(subject_id=int(subject_id)).order_by(func.random()).first()
             if question:
-                user_answer = request.form.get('answer', '').strip()
-                if not user_answer:
-                    message = "Please provide an answer."
-                elif user_answer.lower() == question.anwser.strip().lower():
-                    message = "✅ Correct!"
-                else:
-                    message = f"❌ Incorrect! The correct answer was: {question.anwser}"
+                session['current_question_id'] = question.id
+                return redirect(url_for('quiz_question'))
             else:
-                message = "Question not found."
+                message = "No questions available for this subject."
         else:
-            message = "No active question. Please create some."
+            message = "Please select a subject."
 
-        # Pick a new random question for next round
-        question = Questions.query.order_by(func.random()).first()
+    subjects = Subject.query.filter_by(user_id=current_user.id).all()
+    return render_template("quiz_select_subject.html", subjects=subjects, message=message)
+
+@app.route("/quiz/question", methods=['GET', 'POST'])
+@login_required
+def quiz_question():
+    message = None
+    question = None
+
+    question_id = session.get('current_question_id')
+    subject_id = session.get('quiz_subject_id')
+
+    if not subject_id:
+        return redirect(url_for('quiz'))  # go back to subject selection
+
+    if request.method == 'POST':
+        question = Questions.query.get(question_id)
+        if question:
+            user_answer = request.form.get('user_answer', '').strip()
+            if not user_answer:
+                message = "Please provide an answer."
+            elif user_answer.lower() == question.anwser.strip().lower():
+                message = "✅ Correct!"
+            else:
+                message = f"❌ Incorrect! The correct answer was: {question.anwser}"
+        # Pick a new random question for next round from same subject
+        question = Questions.query.filter_by(subject_id=subject_id).order_by(func.random()).first()
         if question:
             session['current_question_id'] = question.id
 
-    else:  # GET request → start quiz with a random question
-        question = Questions.query.order_by(func.random()).first()
+    else:  # GET request
+        question = Questions.query.filter_by(subject_id=subject_id).order_by(func.random()).first()
         if question:
             session['current_question_id'] = question.id
+        else:
+            message = "No questions available for this subject."
 
     return render_template("quizpage.html", message=message, question=question)
+
 
 @app.route("/create", methods=['GET', 'POST'])
 @login_required
 def create():
     if request.method == 'POST':
-        question = request.form.get('question')
-        answer = request.form.get('answer')
-        if question and answer:
-            new_question = Questions(question=question, anwser=answer, user_id=current_user.id)
+        subject_name = request.form.get("subjectname")
+        if subject_name:
+            new_subject = Subject(title=subject_name, user_id=current_user.id)
+            db.session.add(new_subject)
+            db.session.commit()
+            return redirect(url_for('create_questions', subject_id=new_subject.id))
+    return render_template("create_subject.html")
+
+
+@app.route("/create/<int:subject_id>/questions", methods=['GET', 'POST'])
+@login_required
+def create_questions(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+
+    if request.method == 'POST':
+        question_text = request.form.get('question')
+        answer_text = request.form.get('answer')
+        if question_text and answer_text:
+            new_question = Questions(
+                question=question_text,
+                answer=answer_text,
+                subject_id=subject.id
+            )
             db.session.add(new_question)
             db.session.commit()
-            return render_template("create.html", message="Question added!" , questions=Questions.query.all())
+            message = "Question added!"
         else:
-            return render_template("create.html", message="Please fill out both fields.", questions=Questions.query.all())
-    return render_template("create.html", questions=Questions.query.all())
+            message = "Please fill out both fields."
+    else:
+        message = None
+
+    questions = Questions.query.filter_by(subject_id=subject.id).all()
+    return render_template(
+        "create.html",
+        subject=subject,
+        questions=questions,
+        message=message
+    )
 
 @app.route("/remove", methods=['GET', 'POST'])
 @login_required
-def remove():
+def remove_subject():
+    # Fetch all subjects owned by the current user
+    subjects = Subject.query.filter_by(user_id=current_user.id).all()
+    message = None
+
+    if request.method == 'POST':
+        subject_id = request.form.get('subject_id')
+        if subject_id:
+            subject = Subject.query.filter_by(id=int(subject_id), user_id=current_user.id).first()
+            if subject:
+                db.session.delete(subject)
+                db.session.commit()
+                message = "Subject removed!"
+                subjects = Subject.query.filter_by(user_id=current_user.id).all()
+            else:
+                message = "Subject not found."
+
+    return render_template("remove_subject.html", subjects=subjects, message=message)
+
+
+@app.route("/remove/<int:subject_id>/questions", methods=['GET', 'POST'])
+@login_required
+def remove_questions(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    questions = Questions.query.filter_by(subject_id=subject.id).all()
+    message = None
+
     if request.method == 'POST':
         question_id = request.form.get('questionid')
-        question = Questions.query.get(question_id)
-        if question:
-            db.session.delete(question)
-            db.session.commit()
-            return render_template("remove.html", message="Question removed!", questions=Questions.query.all())
-        else:
-            return render_template("remove.html", message="Question not found.", questions=Questions.query.all())
-    return render_template("remove.html", questions=Questions.query.all())
+        if question_id:
+            question = Questions.query.filter_by(id=int(question_id), subject_id=subject.id).first()
+            if question:
+                db.session.delete(question)
+                db.session.commit()
+                message = "Question removed!"
+                questions = Questions.query.filter_by(subject_id=subject.id).all()
+            else:
+                message = "Question not found."
+
+    return render_template("remove.html", subject=subject, questions=questions, message=message)
 
 if __name__ == "__main__":
     with app.app_context(): #Creates any tables that do not yet exist in the db

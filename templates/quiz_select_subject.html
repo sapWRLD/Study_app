@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Select Quiz Subject</title>
+{% endblock %}
+
+{% block body %}
+<div class="create-question-container">
+    <div class="create-container">
+        <h1>Select a Subject for the Quiz</h1>
+
+        {% if message %}
+            <p class="error">{{ message }}</p>
+        {% endif %}
+
+        <form action="{{ url_for('quiz') }}" method="POST">
+            <select name="subject_id" required>
+                <option value="">-- Select Subject --</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.title }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="button">Start Quiz</button>
+            <a href="/index" class="button">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

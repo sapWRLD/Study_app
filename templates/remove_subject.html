@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>Remove Subject</title>
+{% endblock %}
+
+{% block body %}
+<div class="create-question-container">
+    <div class="create-container">
+        <h1>Remove a Subject</h1>
+
+        {% if message %}
+            <p class="{{ 'success' if 'removed' in message else 'error' }}">{{ message }}</p>
+        {% endif %}
+
+        {% if subjects %}
+            <form action="{{ url_for('remove_subject') }}" method="POST">
+                <label for="subject_id">Select a subject to remove:</label>
+                <select name="subject_id" id="subject_id" required>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.title }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit" class="button">Remove Subject</button>
+                <a href="/index" class="button">Cancel</a>
+            </form>
+        {% else %}
+            <p>No subjects available to remove.</p>
+            <a href="{{ url_for('create') }}" class="button">Create a Subject</a>
+        {% endif %}
+    </div>
+
+    {% if subjects %}
+        <h2>Existing Subjects</h2>
+        {% for subject in subjects %}
+            <div class="question-container">
+                <p>Subject ID: {{ subject.id }}</p>
+                <p>Title: {{ subject.title }}</p>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,33 +1,39 @@
 {% extends "base.html" %}
 
 {% block head %}
-    <title> Questions | Main Page </title>
+    <title>Questions | Main Page</title>
 {% endblock %}
 
 {% block body %}
-    <div class="maincontainer">
-        <h1>Welcome {{name}}</h1>
-        <form action="/logout" method="POST">
-            <button type="submit" name="logout" value="logout">Logout</button>
-        </form>
-        <div class="content-create">
-            <form action="/create" method="post">
-            <h1>If you wish to create content, press the button below!</h1>
-            <a href="/create"></a><button type="submit" name="action" value="create">Create</button>
-            </form>
-        </div>
-        <div class="remove-container">
-            <form action="/remove" method="post">
-            <h1>If you wish to remove content, press the button below!</h1>
-            <a href="/remove"></a><button type="submit" name="action" value="remove">Remove</button>
-            </form>
-        </div>
+<div class="maincontainer">
+    <h1>Welcome {{ name }}</h1>
 
-        <div class="start-container">
-            <form action="/quiz" method="post">
-            <h1>If you wish to start the quiz, press the button below!</h1>
-            <a href="/quiz"></a><button type="submit" name="action" value="start_quiz">Start Quiz</button>
-            </form>
-        </div>
+    <form action="/logout" method="POST">
+        <button type="submit" class="button">Logout</button>
+    </form>
+
+    <div class="content-create">
+        <h2>Create Content</h2>
+        <p>If you wish to create content, press the button below!</p>
+        <form action="/create" method="post">
+            <button type="submit" class="button">Create</button>
+        </form>
     </div>
+
+    <div class="remove-container">
+        <h2>Remove Content</h2>
+        <p>If you wish to remove content, press the button below!</p>
+        <form action="/remove" method="post">
+            <button type="submit" class="button">Remove</button>
+        </form>
+    </div>
+
+    <div class="start-container">
+        <h2>Start Quiz</h2>
+        <p>If you wish to start the quiz, press the button below!</p>
+        <form action="/quiz" method="post">
+            <button type="submit" class="button">Start Quiz</button>
+        </form>
+    </div>
+</div>
 {% endblock %}

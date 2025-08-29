@@ -1,26 +1,34 @@
 {% extends "base.html" %}
 
-{%block head %}
+{% block head %}
     <title>Remove Question</title>
 {% endblock %}
+
 {% block body %}
 <div class="create-question-container">
-        <div class="create-container">
-            <form action="/remove" method="POST">
-                <input type="text" name="questionid" id="questionid" maxlength="2"  placeholder="Enter your question ID that you want to remove!" required>
-                {% if message %}
-                    <p>{{ message }}</p>
-                {% endif %}
-                <button type="submit">Remove</button>
-                <a href="/index" class="button">Cancel</a> 
-           </form>
-        </div>
-        {% for question in questions %}
-            <div class="question-container">
-                <p>Question ID: {{ question.id }}</p>
-                <p>Q: {{ question.question }}</p>
-                <p>A: {{ question.anwser }}</p>
-            </div>
-        {% endfor %}
+    <div class="create-container">
+        <h1>Remove Questions from "{{ subject.title }}"</h1>
+
+        <form action="{{ url_for('remove_questions', subject_id=subject.id) }}" method="POST">
+            <input type="text" name="questionid" id="questionid" maxlength="3" placeholder="Enter the question ID to remove" required>
+
+            {% if message %}
+                <p class="{{ 'success' if 'removed' in message else 'error' }}">{{ message }}</p>
+            {% endif %}
+
+            <button type="submit" class="button">Remove</button>
+            <a href="{{ url_for('create') }}" class="button">Cancel</a>
+        </form>
     </div>
-{%endblock%}
+
+    {% for question in questions %}
+        <div class="question-container">
+            <p>Question ID: {{ question.id }}</p>
+            <p>Q: {{ question.question }}</p>
+            <p>A: {{ question.anwser }}</p>  {# Keep 'anwser' if that’s your model field #}
+        </div>
+    {% else %}
+        <p>No questions in this subject yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}
