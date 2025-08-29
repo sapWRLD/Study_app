@@ -46,6 +46,15 @@ def create():
 
 @app.route("/remove", methods=['GET', 'POST'])
 def remove():
-    return render_template("remove.html")
+    if request.method == 'POST':
+        question_id = request.form.get('questionid')
+        question = Questions.query.get(question_id)
+        if question:
+            db.session.delete(question)
+            db.session.commit()
+            return render_template("remove.html", message="Question removed!", questions=Questions.query.all())
+        else:
+            return render_template("remove.html", message="Question not found.", questions=Questions.query.all())
+    return render_template("remove.html", questions=Questions.query.all())
 
 app.run(debug=True)
