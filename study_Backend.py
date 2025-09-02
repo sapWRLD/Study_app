@@ -41,7 +41,7 @@ def login():
         user = User.query.filter_by(username=request.form["name"]).first()
         if user and check_password_hash(user.password_hash, request.form["password"]):
             login_user(user, remember=True)
-            return redirect(url_for("home"))
+            return redirect(url_for("home", name=user))
 
     return render_template("login.html") 
 
@@ -76,6 +76,7 @@ def register():
 @app.route("/index", methods=['GET', 'POST'])
 @login_required
 def home():
+    username = current_user.username
     if request.method == 'POST':
         action = request.form.get('action')
         if action == "create":
@@ -84,7 +85,7 @@ def home():
             return redirect(url_for('remove'))
         elif action == "start_quiz":
             return redirect(url_for('quiz'))
-    return render_template("index.html")
+    return render_template("index.html", name=username)
 
 @app.route("/quiz", methods=['GET', 'POST'])
 @login_required
